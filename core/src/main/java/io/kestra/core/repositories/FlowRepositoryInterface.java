@@ -105,7 +105,7 @@ public interface FlowRepositoryInterface {
     List<Flow> findAll(String tenantId);
 
     List<FlowWithSource> findAllForAllTenants();
-    
+
     /**
      * Counts the total number of flows.
      *
@@ -121,8 +121,6 @@ public interface FlowRepositoryInterface {
      * @return The count.
      */
     int countForNamespace(@Nullable  String tenantId, @Nullable String namespace);
-
-    List<Flow> findAllForAllTenants();
 
     List<Flow> findByNamespace(String tenantId, String namespace);
 

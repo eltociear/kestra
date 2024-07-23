@@ -261,7 +261,7 @@ public abstract class AbstractFlowRepositoryTest {
 
     @Test
     void findAllForAllTenants() {
-        List<Flow> save = flowRepository.findAllForAllTenants();
+        List<FlowWithSource> save = flowRepository.findAllForAllTenants();
 
         assertThat((long) save.size(), is(Helpers.FLOWS_COUNT));
     }

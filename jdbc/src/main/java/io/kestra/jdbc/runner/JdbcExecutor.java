@@ -89,7 +89,7 @@ public class JdbcExecutor implements ExecutorInterface, Service {
 
     @Inject
     @Named(QueueFactoryInterface.FLOW_NAMED)
-    private QueueInterface<Flow> flowQueue;
+    private QueueInterface<FlowWithSource> flowQueue;
 
     @Inject
     @Named(QueueFactoryInterface.KILL_NAMED)
@@ -145,7 +145,7 @@ public class JdbcExecutor implements ExecutorInterface, Service {
     @Inject
     private FlowTopologyService flowTopologyService;
 
-    protected List<Flow> allFlows;
+    protected List<FlowWithSource> allFlows;
 
     @Inject
     private WorkerGroupService workerGroupService;
@@ -241,7 +241,7 @@ public class JdbcExecutor implements ExecutorInterface, Service {
         this.receiveCancellations.addFirst(flowQueue.receive(
             FlowTopology.class,
             either -> {
-                Flow flow;
+                FlowWithSource flow;
                 if (either.isRight()) {
                     log.error("Unable to deserialize a flow: {}", either.getRight().getMessage());
                     try {
@@ -263,7 +263,7 @@ public class JdbcExecutor implements ExecutorInterface, Service {
                         flowTopologyService
                             .topology(
                                 flow,
-                                this.allFlows.stream()
+                                this.allFlows.stream().map(flowWithSource -> flowWithSource.toFlow())
                             )
                     )
                         .distinct()
@@ -822,13 +822,14 @@ public class JdbcExecutor implements ExecutorInterface, Service {
                 executorStateStorage.delete(executor.getExecution());
             }
 
+
             // handle actions on terminated state
             // the terminated state can only come from the execution queue, and in this case we always have a flow in the executor
             if (executor.getFlow() != null && conditionService.isTerminatedWithListeners(executor.getFlow(), executor.getExecution())) {
                 Execution execution = executor.getExecution();
                 // handle flow triggers
-                flowTriggerService.computeExecutionsFromFlowTriggers(execution, allFlows, Optional.of(multipleConditionStorage))
-                    .forEach(throwConsumer(executionFromFlowTrigger -> this.executionQueue.emit(executionFromFlowTrigger)));
+                flowTriggerService.computeExecutionsFromFlowTriggers(execution, allFlows.stream().map(flowWithSource -> flowWithSource.toFlow()).toList(), Optional.of(multipleConditionStorage))
+                    .forEach(throwConsumer(this.executionQueue::emit));
 
                 // purge subflow execution storage
                 subflowExecutionStorage.get(execution.getId())

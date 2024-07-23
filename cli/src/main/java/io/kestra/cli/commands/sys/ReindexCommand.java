@@ -30,7 +30,7 @@ public class ReindexCommand extends AbstractCommand {
         if ("flow".equals(type)) {
             FlowRepositoryInterface flowRepository = applicationContext.getBean(FlowRepositoryInterface.class);
 
-            List<Flow> allFlow = flowRepository.findAllForAllTenants();
+            List<Flow> allFlow = flowRepository.findAllForAllTenants().stream().map(flowWithSource -> flowWithSource.toFlow()).toList();
             allFlow.stream()
                 .map(flow -> flowRepository.findByIdWithSource(flow.getTenantId(), flow.getNamespace(), flow.getId()).orElse(null))
                 .filter(flow -> flow != null)

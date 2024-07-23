@@ -6,6 +6,7 @@ import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.conditions.ConditionContext;
 import io.kestra.core.models.executions.Execution;
 import io.kestra.core.models.flows.Flow;
+import io.kestra.core.models.flows.FlowWithSource;
 import io.kestra.core.models.flows.PluginDefault;
 import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.models.tasks.Task;
@@ -15,7 +16,9 @@ import io.kestra.core.models.triggers.PollingTriggerInterface;
 import io.kestra.core.models.triggers.TriggerContext;
 import io.kestra.core.models.triggers.TriggerOutput;
 import io.kestra.core.runners.RunContext;
+import io.kestra.core.serializers.YamlFlowParser;
 import io.kestra.plugin.core.condition.ExpressionCondition;
+import io.kestra.plugin.core.log.Log;
 import io.kestra.plugin.core.trigger.Schedule;
 import jakarta.inject.Inject;
 import lombok.EqualsAndHashCode;
@@ -25,6 +28,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.event.Level;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -277,6 +281,33 @@ class PluginDefaultServiceTest {
         FlowWithSource injected = pluginDefaultService.injectDefaults(flow);
 
         assertThat(((DefaultTester) injected.getTasks().getFirst()).getDefaultValue(), is("overridden"));
+    }
+
+    @Test
+    public void taskValueOverTaskDefaults() {
+        String source = """
+            id: default-test
+            namespace: io.kestra.tests
+
+            tasks:
+            - id: test
+              type: io.kestra.plugin.core.log.Log
+              message: testing
+              level: INFO""";
+
+        FlowWithSource flow = yamlFlowParser.parse(source, Flow.class)
+            .withSource(source)
+            .toBuilder()
+            .pluginDefaults(List.of(
+                new PluginDefault(Log.class.getName(), false, ImmutableMap.of(
+                    "level", Level.WARN
+                ))
+            ))
+            .build();
+
+        FlowWithSource injected = pluginDefaultService.injectDefaults(flow);
+
+        assertThat(((Log) injected.getTasks().getFirst()).getLevel(), is(Level.INFO));
     }
 
     @SuperBuilder

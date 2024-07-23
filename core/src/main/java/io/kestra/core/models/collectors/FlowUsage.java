@@ -33,7 +33,7 @@ public class FlowUsage {
     }
 
     public static FlowUsage of(FlowRepositoryInterface flowRepository) {
-        return FlowUsage.of(flowRepository.findAllForAllTenants());
+        return FlowUsage.of(flowRepository.findAllForAllTenants().stream().map(flow -> flow.toFlow()).toList());
     }
 
     public static FlowUsage of(List<Flow> flows) {
