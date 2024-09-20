@@ -48,7 +48,7 @@ public class BlueprintController {
         @Parameter(description = "The current page size") @QueryValue(defaultValue = "1") Integer size,
         HttpRequest<?> httpRequest
     ) throws URISyntaxException {
-        return fastForwardToKestraApi(httpRequest, "/v1/blueprints", Map.of("ee", false), Argument.of(PagedResults.class, BlueprintItem.class));
+        return forwardToKestraApi(httpRequest, "/v1/blueprints", Map.of("ee", false), Argument.of(PagedResults.class, BlueprintItem.class));
     }
 
     @ExecuteOn(TaskExecutors.IO)
@@ -58,7 +58,7 @@ public class BlueprintController {
         @Parameter(description = "The blueprint id") String id,
         HttpRequest<?> httpRequest
     ) throws URISyntaxException {
-        return fastForwardToKestraApi(httpRequest, "/v1/blueprints/" + id + "/flow", Argument.of(String.class));
+        return forwardToKestraApi(httpRequest, "/v1/blueprints/" + id + "/flow", Argument.of(String.class));
     }
 
     @ExecuteOn(TaskExecutors.IO)
@@ -68,7 +68,7 @@ public class BlueprintController {
         @Parameter(description = "The blueprint id") String id,
         HttpRequest<?> httpRequest
     ) throws URISyntaxException {
-        return fastForwardToKestraApi(httpRequest, "/v1/blueprints/" + id + "/graph", Argument.mapOf(String.class, Object.class));
+        return forwardToKestraApi(httpRequest, "/v1/blueprints/" + id + "/graph", Argument.mapOf(String.class, Object.class));
     }
 
     @ExecuteOn(TaskExecutors.IO)
@@ -78,7 +78,7 @@ public class BlueprintController {
         @Parameter(description = "The blueprint id") String id,
         HttpRequest<?> httpRequest
     ) throws URISyntaxException {
-        return fastForwardToKestraApi(httpRequest, "/v1/blueprints/" + id, Argument.of(BlueprintItemWithFlow.class));
+        return forwardToKestraApi(httpRequest, "/v1/blueprints/" + id, Argument.of(BlueprintItemWithFlow.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -89,16 +89,16 @@ public class BlueprintController {
         @Parameter(description = "A string filter to get tags with matching blueprints only") @Nullable @QueryValue(value = "q") Optional<String> q,
         HttpRequest<?> httpRequest
     ) throws URISyntaxException {
-        return fastForwardToKestraApi(httpRequest, "/v1/blueprints/tags", Argument.of(List.class, BlueprintTagItem.class));
+        return forwardToKestraApi(httpRequest, "/v1/blueprints/tags", Argument.of(List.class, BlueprintTagItem.class));
     }
 
-    protected  <T> T fastForwardToKestraApi(HttpRequest<?> originalRequest, String newPath, Argument<T> returnType) throws URISyntaxException {
-        return this.fastForwardToKestraApi(originalRequest, newPath, null, returnType);
+    protected  <T> T forwardToKestraApi(HttpRequest<?> originalRequest, String newPath, Argument<T> returnType) throws URISyntaxException {
+        return this.forwardToKestraApi(originalRequest, newPath, null, returnType);
     }
 
-    private <T> T fastForwardToKestraApi(HttpRequest<?> originalRequest, String newPath, Map<String, Object> additionalQueryParams, Argument<T> returnType) throws URISyntaxException {
+    private <T> T forwardToKestraApi(HttpRequest<?> originalRequest, String newPath, Map<String, Object> additionalQueryParams, Argument<T> returnType) throws URISyntaxException {
         UriBuilder uriBuilder = UriBuilder.of(originalRequest.getUri())
-            .replacePath(originalRequest.getUri().getPath().toString().replaceAll("^[^?]*", newPath));
+            .replacePath(originalRequest.getUri().getPath().replaceAll("^[^?]*", newPath));
 
         if (additionalQueryParams != null) {
             additionalQueryParams.forEach(uriBuilder::queryParam);

@@ -164,7 +164,12 @@ export default (app, routes, stores, translations) => {
     app.component("TaskSubflowInputs", TaskSubflowInputs)
     app.component("TaskTaskRunner", TaskTaskRunner)
     app.component("LeftMenuLink", LeftMenuLink)
-    app.component("RouterMd", RouterMd)
+    app.component("RouterMd", RouterMd);
+    const components = import.meta.glob("../components/content/*.vue", {eager: true});
+    for (const name in components) {
+        const componentName = name.replace(/^.*\/(.*)\.vue$/, "$1");
+        app.component(componentName, {...components[name].default})
+    }
 
     return {store, router};
 }

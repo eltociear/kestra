@@ -17,7 +17,10 @@ export default defineConfig({
         alias: {
             "override": path.resolve(__dirname, "src/override/"),
             // allow to render at runtime
-            vue: "vue/dist/vue.esm-bundler.js"
+            vue: "vue/dist/vue.esm-bundler.js",
+
+            "#mdc-imports": path.resolve(__dirname, "node_modules/@kestra-io/ui-libs/stub-mdc-imports.js"),
+            "#mdc-configs": path.resolve(__dirname, "node_modules/@kestra-io/ui-libs/stub-mdc-imports.js"),
         },
     },
     plugins: [
